@@ -304,6 +304,27 @@ nav .wrap{display:flex; align-items:center; justify-content:space-between; paddi
 .install-banner .ib-text strong{display:block; font-size:14px; margin-bottom:2px;}
 .install-banner .ib-text span{color:var(--muted); font-size:12.5px;}
 .install-banner button{flex-shrink:0;}
+
+/* TOP INSTALL BAR — shown immediately on mobile, before any scrolling */
+.top-install-bar{
+  display:none; align-items:center; gap:10px; padding:10px 14px;
+  background:linear-gradient(90deg,#0F1626,#161F35); border-bottom:1px solid var(--line);
+  position:relative; z-index:60;
+}
+.top-install-bar.show{display:flex;}
+.top-install-bar .tib-icon{width:26px; height:26px; border-radius:7px; flex-shrink:0;}
+.top-install-bar .tib-text{flex:1; min-width:0; font-size:12.5px; line-height:1.3;}
+.top-install-bar .tib-text strong{display:block; color:var(--text); font-size:12.5px;}
+.top-install-bar .tib-text span{color:var(--muted); font-size:11px;}
+.top-install-bar .tib-btn{
+  flex-shrink:0; font-family:var(--body); font-weight:600; font-size:12px; color:#06120F;
+  background:var(--teal); border:none; border-radius:7px; padding:7px 12px; cursor:pointer;
+}
+.top-install-bar .tib-close{
+  flex-shrink:0; width:26px; height:26px; border-radius:7px; border:1px solid var(--line);
+  background:transparent; color:var(--muted); cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center;
+}
+@media(min-width:640px){.top-install-bar{display:none !important;}}
 .ios-steps{display:none; margin-top:14px; padding:14px 16px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); font-size:13px; color:var(--muted); max-width:640px;}
 .ios-steps.show{display:block;}
 .ios-steps ol{margin:8px 0 0 18px; padding:0;}
@@ -381,6 +402,13 @@ footer{border-top:1px solid var(--line); padding:50px 0 34px;}
       <li>Choisis « Sur l'écran d'accueil »</li>
     </ol>
   </div>
+</div>
+
+<div class="top-install-bar" id="topInstallBar">
+  <img class="tib-icon" id="tibIcon" src="" alt="">
+  <div class="tib-text" id="tibText"><strong>Installer NEUROLIFE</strong><span>Comme une vraie app, sur ton écran d'accueil</span></div>
+  <button class="tib-btn" id="tibBtn" onclick="triggerInstall()">Installer</button>
+  <button class="tib-close" onclick="dismissTopInstallBar()" aria-label="Fermer">✕</button>
 </div>
 
 <nav>
@@ -927,12 +955,44 @@ if('serviceWorker' in navigator && location.protocol !== 'file:'){
   });
 }
 
+let topBarDismissed = false;
 let deferredInstallPrompt = null;
+
+function initTopInstallBar(){
+  try{
+    const iconSrc = document.querySelector('.ib-icon')?.getAttribute('src');
+    const tibIcon = document.getElementById('tibIcon');
+    if(iconSrc && tibIcon) tibIcon.setAttribute('src', iconSrc);
+  }catch(err){ console.warn('initTopInstallBar icon copy failed:', err); }
+}
+function showTopInstallBar(mode){
+  try{
+    if(topBarDismissed || window.innerWidth > 640) return;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if(isStandalone) return;
+    const bar = document.getElementById('topInstallBar');
+    const btn = document.getElementById('tibBtn');
+    const text = document.getElementById('tibText');
+    if(!bar) return;
+    if(mode === 'ios' && text){
+      text.innerHTML = '<strong>Installer NEUROLIFE</strong><span>Safari → Partager → Sur l’écran d’accueil</span>';
+      if(btn) btn.style.display = 'none';
+    }
+    bar.classList.add('show');
+  }catch(err){ console.warn('showTopInstallBar failed:', err); }
+}
+function dismissTopInstallBar(){
+  topBarDismissed = true;
+  const bar = document.getElementById('topInstallBar');
+  if(bar) bar.classList.remove('show');
+}
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
   const banner = document.getElementById('installBanner');
   if(banner) banner.classList.add('show');
+  showTopInstallBar('android');
 });
 function triggerInstall(){
   if(!deferredInstallPrompt) return;
@@ -941,25 +1001,30 @@ function triggerInstall(){
     deferredInstallPrompt = null;
     const banner = document.getElementById('installBanner');
     if(banner) banner.classList.remove('show');
+    dismissTopInstallBar();
   });
 }
 window.addEventListener('appinstalled', () => {
   const banner = document.getElementById('installBanner');
   if(banner) banner.classList.remove('show');
+  dismissTopInstallBar();
 });
 
 // iOS Safari never fires beforeinstallprompt — show manual steps instead,
 // but only if not already running as an installed app.
 (function(){
   try{
+    initTopInstallBar();
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
     if(isIOS && !isStandalone){
       const steps = document.getElementById('iosSteps');
       if(steps) steps.classList.add('show');
+      showTopInstallBar('ios');
     }
   }catch(err){ console.warn('iOS install detection failed:', err); }
 })();
+
 
 /* ---------- Critical state (must exist before anything else can fail) ---------- */
 // Session-only account state. Real persistence across visits requires a real
