@@ -112,6 +112,13 @@ nav .wrap{display:flex; align-items:center; justify-content:space-between; paddi
 .navlinks button.active::after{content:''; position:absolute; left:0; right:0; bottom:-4px; height:1.5px; background:linear-gradient(90deg,var(--teal),var(--violet));}
 @media(min-width:900px){.navlinks{display:flex;}}
 .nav-right{display:flex; align-items:center; gap:12px; margin-left:auto;}
+.nav-install-btn{
+  display:none; align-items:center; gap:6px; font-family:var(--body); font-weight:600; font-size:12.5px;
+  color:var(--teal); background:rgba(43,224,200,.08); border:1px solid rgba(43,224,200,.3);
+  border-radius:8px; padding:7px 12px; cursor:pointer; transition:.2s; white-space:nowrap;
+}
+.nav-install-btn:hover{background:rgba(43,224,200,.16); border-color:rgba(43,224,200,.5);}
+@media(min-width:900px){.nav-install-btn.ready{display:flex;}}
 .nav-account{display:none; align-items:center; gap:12px; font-family:var(--mono); font-size:12.5px; color:var(--muted);}
 @media(min-width:900px){.nav-account{display:flex;}}
 .nav-account .email{color:var(--teal);}
@@ -435,6 +442,10 @@ footer{border-top:1px solid var(--line); padding:50px 0 34px;}
       <button data-page="contact" onclick="showPage('contact')">Contact</button>
     </div>
     <div class="nav-right">
+      <button class="nav-install-btn" id="navInstallBtn" onclick="triggerInstall()">
+        <svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 1 L8 10 M4 7 L8 11 L12 7 M2 13 L14 13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Installer l'app
+      </button>
       <div class="nav-account" id="navAccount"></div>
       <button class="nav-toggle" id="navToggle" aria-label="Ouvrir le menu" aria-expanded="false"><span></span></button>
     </div>
@@ -992,6 +1003,8 @@ window.addEventListener('beforeinstallprompt', (e) => {
   deferredInstallPrompt = e;
   const banner = document.getElementById('installBanner');
   if(banner) banner.classList.add('show');
+  const navBtn = document.getElementById('navInstallBtn');
+  if(navBtn) navBtn.classList.add('ready');
   showTopInstallBar('android');
 });
 function triggerInstall(){
@@ -1001,12 +1014,16 @@ function triggerInstall(){
     deferredInstallPrompt = null;
     const banner = document.getElementById('installBanner');
     if(banner) banner.classList.remove('show');
+    const navBtn = document.getElementById('navInstallBtn');
+    if(navBtn) navBtn.classList.remove('ready');
     dismissTopInstallBar();
   });
 }
 window.addEventListener('appinstalled', () => {
   const banner = document.getElementById('installBanner');
   if(banner) banner.classList.remove('show');
+  const navBtn = document.getElementById('navInstallBtn');
+  if(navBtn) navBtn.classList.remove('ready');
   dismissTopInstallBar();
 });
 
