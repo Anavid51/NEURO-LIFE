@@ -7,6 +7,10 @@
 <meta name="keywords" content="NEUROLIFE, santé prédictive, health-tech, prévention santé, IA santé, DESSOUASSI Anael David, Bénin, Cotonou">
 <meta name="author" content="DESSOUASSI Anael David">
 <meta name="robots" content="index, follow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.kkiapay.me https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co https://*.kkiapay.me; frame-src https://cdn.kkiapay.me https://widget.kkiapay.me; base-uri 'self'; object-src 'none'; form-action 'self';">
+<!-- Note : frame-ancestors (anti-clickjacking) doit être défini via un vrai
+     en-tête HTTP côté serveur — une balise <meta> ne peut pas l'appliquer.
+     Sur Netlify/Vercel, ajoute un fichier _headers avec X-Frame-Options: SAMEORIGIN. -->
 <!-- ⚠️ Remplace cette URL par ton vrai nom de domaine une fois le site hébergé -->
 <link rel="canonical" href="https://neurolife.app/">
 <meta property="og:title" content="NEUROLIFE — Prédisez votre santé avant qu'elle ne bascule">
@@ -206,6 +210,7 @@ nav .wrap{display:flex; align-items:center; justify-content:space-between; paddi
 .form-field input:focus, .form-field textarea:focus, .form-field select:focus{border-color:var(--teal); box-shadow:0 0 0 3px rgba(43,224,200,.12);}
 .field-error{color:var(--rose); font-size:12px; margin-top:-10px; margin-bottom:14px;}
 .modal-error{background:rgba(255,110,122,.1); border:1px solid rgba(255,110,122,.35); color:#FF9BA3; font-size:13px; padding:12px 14px; border-radius:10px; margin-bottom:16px;}
+.pay-sandbox-note{font-family:var(--mono); font-size:11px; color:var(--amber); text-align:center; margin-bottom:14px;}
 
 /* SENSOR PANELS */
 .sensor-grid{display:grid; grid-template-columns:1fr; gap:20px; margin-top:40px;}
@@ -254,6 +259,17 @@ nav .wrap{display:flex; align-items:center; justify-content:space-between; paddi
 .bilan-projection h4{font-size:14px; margin-bottom:4px;}
 .bilan-projection .proj-note{color:var(--muted); font-size:12px; margin-bottom:14px; max-width:520px;}
 .bilan-projection svg{width:100%; height:auto; display:block;}
+
+.bilan-domains{}
+.domain-note{color:var(--muted); font-size:12px; margin-bottom:14px; max-width:560px;}
+.domain-grid{display:grid; grid-template-columns:1fr; gap:10px;}
+@media(min-width:700px){.domain-grid{grid-template-columns:repeat(2,1fr);}}
+.domain-item{display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:11px 14px; font-size:13px;}
+.domain-item .dn{color:var(--text);}
+.domain-item .dv{font-family:var(--mono); font-size:11.5px; padding:3px 9px; border-radius:100px;}
+.dv.ok{color:#2BE0C8; background:rgba(43,224,200,.1);}
+.dv.watch{color:#F5B23F; background:rgba(245,178,63,.1);}
+.dv.attn{color:#FF6E7A; background:rgba(255,110,122,.1);}
 
 /* SENSOR SHOWCASE (home) */
 .sensor-showcase{display:grid; grid-template-columns:1fr; gap:16px; margin-top:32px;}
@@ -656,6 +672,12 @@ footer{border-top:1px solid var(--line); padding:50px 0 34px;}
         <div class="bilan-row pending" data-key="sleep"><span class="bl-name">Sommeil</span><div class="bl-bar"><div class="bl-fill" style="width:0%; background:#F5B23F;"></div></div><span class="bl-val">—</span></div>
       </div>
 
+      <div class="bilan-domains" id="bilanDomains" style="display:none;">
+        <h4 style="font-size:14px; margin-top:24px; padding-top:20px; border-top:1px solid var(--line); margin-bottom:4px;">Domaines à surveiller</h4>
+        <div class="domain-note">Des grandes catégories physiologiques, pas un diagnostic. <strong style="color:var(--text);">NEUROLIFE ne nomme aucune maladie</strong> (diabète, hypertension ou autre) — seul un professionnel de santé peut poser un diagnostic.</div>
+        <div class="domain-grid" id="domainGrid"></div>
+      </div>
+
       <div class="bilan-projection">
         <h4>Projection illustrative</h4>
         <div class="proj-note">Ceci illustre à quoi ressemblerait un suivi dans le temps si ton indice restait stable — <strong style="color:var(--text);">ce n'est pas une prédiction médicale</strong>. Une vraie projection à 6-18 mois demande un suivi réel sur la durée, pas une mesure isolée.</div>
@@ -827,17 +849,19 @@ Cotonou, Bénin</div>
       <div class="sub" id="accountSub">Démarrez avec le plan Essentiel — modifiable à tout moment.</div>
       <div class="modal-error" id="accountModalError" style="display:none;"></div>
       <form id="accountForm" onsubmit="submitAccount(event)" novalidate>
-        <div class="form-field"><label for="aName">Nom</label><input id="aName" type="text" placeholder="Votre nom"></div>
-        <div class="form-field"><label for="aEmail">Email</label><input id="aEmail" type="email" placeholder="vous@exemple.com"></div>
-        <div class="form-field"><label for="aPass">Mot de passe</label><input id="aPass" type="password" placeholder="6 caractères minimum"></div>
+        <div class="form-field"><label for="aName">Nom</label><input id="aName" type="text" autocomplete="name" placeholder="Votre nom"></div>
+        <div class="form-field"><label for="aEmail">Email</label><input id="aEmail" type="email" autocomplete="email" placeholder="vous@exemple.com"></div>
+        <div class="form-field"><label for="aPass">Mot de passe</label><input id="aPass" type="password" autocomplete="new-password" placeholder="6 caractères minimum"></div>
         <button type="submit" class="btn btn-primary btn-block">Créer mon compte</button>
-        <div class="form-note">Démonstration : ces informations ne sont ni enregistrées ni envoyées à un serveur. Elles disparaissent si vous rechargez la page. Une vraie inscription nécessiterait une infrastructure sécurisée dédiée.</div>
+        <div class="form-note">Ton nom, ton email et ton plan restent enregistrés sur cet appareil (mémoire locale du navigateur), pas sur un serveur — le mot de passe, lui, n'est jamais conservé. Ce n'est pas encore un vrai système d'authentification sécurisé.</div>
       </form>
     </div>
     <div class="form-success" id="accountSuccess">
       <svg class="check" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="none" stroke="#2BE0C8" stroke-width="2"/><path d="M15 24 L21 30 L33 17" fill="none" stroke="#2BE0C8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <h2 style="margin-bottom:8px;">Compte créé</h2>
       <p style="color:var(--muted); font-size:13.5px; margin-bottom:20px;" id="accountSuccessMsg"></p>
+      <button class="btn btn-primary btn-block" id="payNowBtn" style="display:none; margin-bottom:10px;" onclick="startKkiapayPayment()">Payer par carte ou Mobile Money</button>
+      <div class="pay-sandbox-note" id="paySandboxNote" style="display:none;">Mode test (sandbox) — configure ta vraie clé KKiaPay pour activer les paiements réels. Voir le commentaire dans le code.</div>
       <button class="btn btn-ghost btn-block" onclick="closeAccountModal()">Continuer</button>
     </div>
   </div>
@@ -898,6 +922,10 @@ window.addEventListener('appinstalled', () => {
 })();
 
 /* ---------- Critical state (must exist before anything else can fail) ---------- */
+// Session-only account state. Real persistence across visits requires a real
+// backend (see the Supabase auth block further down) — browser storage APIs
+// are deliberately not used here, since they're unreliable inside embedded
+// previews and aren't a substitute for real, secure authentication anyway.
 let demoAccount = null;
 let pendingPlan = null;
 
@@ -1057,7 +1085,38 @@ function updateBilanSensor(key, score){
     if(textEl) textEl.textContent = text;
 
     drawBilanProjection(avg);
+    renderBilanDomains();
   }catch(err){ console.error('updateBilanSensor failed:', err); }
+}
+
+/* Broad physiological domains — deliberately generic, never a named disease.
+   Mapping: cardiac sensor -> cardiovascular; voice -> nervous/stress;
+   sleep -> recovery; gait -> mobility. Each domain only appears once its
+   underlying sensor has actually run. */
+function domainLevel(score){
+  if(score >= 70) return {label:'Dans la norme', cls:'ok'};
+  if(score >= 45) return {label:'À surveiller', cls:'watch'};
+  return {label:'Attention conseillée', cls:'attn'};
+}
+function renderBilanDomains(){
+  try{
+    const grid = document.getElementById('domainGrid');
+    const wrap = document.getElementById('bilanDomains');
+    if(!grid || !wrap) return;
+    const domains = [
+      { key:'cardiac', name:'Cardiovasculaire' },
+      { key:'voice',   name:'Nerveux / stress' },
+      { key:'sleep',   name:'Récupération' },
+      { key:'gait',    name:'Mobilité' }
+    ];
+    const active = domains.filter(d => sensorState[d.key]);
+    if(active.length === 0){ wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+    grid.innerHTML = active.map(d => {
+      const lvl = domainLevel(sensorState[d.key].score);
+      return `<div class="domain-item"><span class="dn">${d.name}</span><span class="dv ${lvl.cls}">${lvl.label}</span></div>`;
+    }).join('');
+  }catch(err){ console.error('renderBilanDomains failed:', err); }
 }
 function drawBilanProjection(avg){
   try{
@@ -1392,7 +1451,21 @@ function renderNavAccount(){
   const nav = document.getElementById('navAccount');
   const mobileBtn = document.getElementById('mobileAccountBtn');
   if(demoAccount){
-    nav.innerHTML = `<span class="email">${demoAccount.email}</span><button class="logout" onclick="logoutAccount()">Déconnexion</button>`;
+    // Built via DOM APIs (not innerHTML) on purpose: demoAccount.email is
+    // user-supplied text. Even though our validation regex requires an
+    // "@" and a "." somewhere, it does not forbid HTML-special characters
+    // like < > " — so interpolating it into innerHTML would be a real
+    // stored-XSS hole (e.g. an email-shaped string containing an <img
+    // onerror=...> payload). textContent never executes markup.
+    nav.replaceChildren();
+    const emailSpan = document.createElement('span');
+    emailSpan.className = 'email';
+    emailSpan.textContent = demoAccount.email;
+    const logoutBtn = document.createElement('button');
+    logoutBtn.className = 'logout';
+    logoutBtn.textContent = 'Déconnexion';
+    logoutBtn.addEventListener('click', logoutAccount);
+    nav.append(emailSpan, logoutBtn);
     if(mobileBtn){ mobileBtn.textContent = 'Déconnexion'; mobileBtn.onclick = logoutAccount; }
   } else {
     nav.innerHTML = `<button class="btn btn-ghost" style="padding:9px 16px; font-size:13px;" onclick="openAccountModal()">Créer un compte</button>`;
@@ -1452,7 +1525,7 @@ document.addEventListener('keydown', (e)=>{
   if(mobileMenu && mobileMenu.classList.contains('open')) mobileMenu.classList.remove('open');
 });
 
-function submitAccount(e){
+async function submitAccount(e){
   e.preventDefault();
   try{
     clearAccountErrors();
@@ -1468,7 +1541,7 @@ function submitAccount(e){
     // `required` alone to tell the person what's wrong.
     const problems = [];
     if(!name) problems.push([nameEl, 'Indique ton nom.']);
-    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) problems.push([emailEl, 'Indique un email valide.']);
+    if(!email || !/^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(email)) problems.push([emailEl, 'Indique un email valide.']);
     if(!pass || pass.length < 6) problems.push([passEl, '6 caractères minimum.']);
 
     if(problems.length){
@@ -1484,12 +1557,51 @@ function submitAccount(e){
     }
 
     const plan = pendingPlan || 'Essentiel';
-    demoAccount = {name, email, plan};
+    const submitBtn = document.querySelector('#accountForm button[type=submit]');
+
+    if(SUPABASE_CONFIGURED){
+      if(!supabaseClient){
+        const banner = document.getElementById('accountModalError');
+        if(banner){ banner.textContent = "L'authentification est encore en train de se charger — réessaie dans une seconde."; banner.style.display = 'block'; }
+        return;
+      }
+      if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = 'Création…'; }
+      const { data, error } = await supabaseClient.auth.signUp({
+        email, password: pass, options: { data: { name, plan } }
+      });
+      if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = 'Créer mon compte'; }
+      if(error){
+        const banner = document.getElementById('accountModalError');
+        if(banner){ banner.textContent = error.message || "Erreur lors de la création du compte."; banner.style.display = 'block'; }
+        return;
+      }
+      demoAccount = { name, email, plan, real: true };
+    } else {
+      demoAccount = { name, email, plan };
+    }
+
     renderNavAccount();
     document.getElementById('accountFormView').style.display = 'none';
     const successEl = document.getElementById('accountSuccess');
     successEl.classList.add('show');
-    document.getElementById('accountSuccessMsg').textContent = `Bienvenue ${name} — plan ${plan} activé (démonstration).`;
+    document.getElementById('accountSuccessMsg').textContent = SUPABASE_CONFIGURED
+      ? `Bienvenue ${name} — compte réel créé, plan ${plan}. Vérifie ta boîte mail pour confirmer ton adresse si Supabase te le demande.`
+      : `Bienvenue ${name} — plan ${plan} activé (démonstration).`;
+
+    const payBtn = document.getElementById('payNowBtn');
+    const payNote = document.getElementById('paySandboxNote');
+    const planPrices = { 'Premium': 6550, 'Entreprise': null }; // FCFA — Entreprise = sur devis
+    if(payBtn){
+      if(plan in planPrices && planPrices[plan]){
+        payBtn.style.display = 'block';
+        payBtn.dataset.amount = planPrices[plan];
+        payBtn.dataset.plan = plan;
+        if(payNote) payNote.style.display = 'block';
+      } else {
+        payBtn.style.display = 'none';
+        if(payNote) payNote.style.display = 'none';
+      }
+    }
   }catch(err){
     console.error('submitAccount failed:', err);
     const banner = document.getElementById('accountModalError');
@@ -1499,8 +1611,84 @@ function submitAccount(e){
     }
   }
 }
+/* ---------- Payment (KKiaPay — carte + Mobile Money MTN/Moov, Bénin) ----------
+   1. Crée un compte marchand sur https://app.kkiapay.me
+   2. Renseigne ton numéro Mobile Money (0162552778) comme destination des reversements
+   3. Récupère ta clé publique dans le tableau de bord et remplace-la ci-dessous
+   4. Passe KKIAPAY_SANDBOX à false pour activer les vrais paiements
+   Tant que la clé ci-dessous n'est pas remplacée, le widget reste en mode test
+   (sandbox) — aucun vrai débit n'a lieu, quoi que fasse la personne qui teste. */
+/* ---------- Real authentication (Supabase) ----------
+   1. Crée un projet gratuit sur https://supabase.com
+   2. Dans Project Settings → API, copie l'URL du projet et la clé publique "anon"
+      (jamais la clé "service_role", qui doit rester secrète et ne JAMAIS être
+      mise dans du code front-end)
+   3. Remplace les deux valeurs ci-dessous
+   Tant qu'elles ne sont pas remplacées, le site reste en mode démo : les
+   comptes créés existent seulement en mémoire, le temps de la session, comme
+   avant. Dès qu'elles sont renseignées, la création de compte devient réelle
+   (mot de passe hashé côté serveur par Supabase, jamais stocké en clair). */
+const SUPABASE_URL = 'REMPLACE_PAR_URL_SUPABASE';
+const SUPABASE_ANON_KEY = 'REMPLACE_PAR_CLE_ANON_SUPABASE';
+const SUPABASE_CONFIGURED = !SUPABASE_URL.startsWith('REMPLACE') && !SUPABASE_ANON_KEY.startsWith('REMPLACE');
+let supabaseClient = null;
+if(SUPABASE_CONFIGURED){
+  const sbScript = document.createElement('script');
+  sbScript.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+  sbScript.onload = () => {
+    try{ supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+    catch(err){ console.error('Supabase init failed:', err); }
+  };
+  document.head.appendChild(sbScript);
+}
+
+const KKIAPAY_PUBLIC_KEY = 'REMPLACE_PAR_TA_CLE_PUBLIQUE_KKIAPAY';
+const KKIAPAY_SANDBOX = true;
+
+function startKkiapayPayment(){
+  try{
+    const btn = document.getElementById('payNowBtn');
+    const amount = btn ? btn.dataset.amount : null;
+    const plan = btn ? btn.dataset.plan : 'Premium';
+    if(!amount){ console.error('startKkiapayPayment: no amount set'); return; }
+
+    if(!document.getElementById('kkiapaySdk')){
+      const script = document.createElement('script');
+      script.id = 'kkiapaySdk';
+      script.src = 'https://cdn.kkiapay.me/k.js';
+      document.body.appendChild(script);
+    }
+
+    const existing = document.getElementById('kkiapayWidgetEl');
+    if(existing) existing.remove();
+
+    const widget = document.createElement('kkiapay-widget');
+    widget.id = 'kkiapayWidgetEl';
+    widget.setAttribute('amount', amount);
+    widget.setAttribute('key', KKIAPAY_PUBLIC_KEY);
+    widget.setAttribute('position', 'center');
+    widget.setAttribute('sandbox', KKIAPAY_SANDBOX ? 'true' : 'false');
+    widget.setAttribute('data', JSON.stringify({ plan, source: 'NEUROLIFE' }));
+    document.body.appendChild(widget);
+
+    if(typeof openKkiapayWidget === 'function'){
+      openKkiapayWidget({ amount: Number(amount), key: KKIAPAY_PUBLIC_KEY, sandbox: KKIAPAY_SANDBOX, data: JSON.stringify({ plan }) });
+    }
+  }catch(err){
+    console.error('startKkiapayPayment failed:', err);
+    const note = document.getElementById('paySandboxNote');
+    if(note){
+      note.textContent = "Le module de paiement n'a pas pu s'ouvrir. Vérifie ta connexion, ou écris-nous depuis la page Contact.";
+      note.style.color = 'var(--rose)';
+    }
+  }
+}
+
 function logoutAccount(){
   demoAccount = null;
+  if(SUPABASE_CONFIGURED && supabaseClient){
+    supabaseClient.auth.signOut().catch(err => console.error('Supabase signOut failed:', err));
+  }
   renderNavAccount();
 }
 renderNavAccount();
@@ -1523,7 +1711,7 @@ function submitContact(e){
 
     const problems = [];
     if(!name) problems.push([nameEl, 'Indique ton nom.']);
-    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) problems.push([emailEl, 'Indique un email valide.']);
+    if(!email || !/^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(email)) problems.push([emailEl, 'Indique un email valide.']);
     if(!msg) problems.push([msgEl, 'Écris un message.']);
 
     if(problems.length){
