@@ -210,6 +210,9 @@ nav .wrap{display:flex; align-items:center; justify-content:space-between; paddi
 .form-field input:focus, .form-field textarea:focus, .form-field select:focus{border-color:var(--teal); box-shadow:0 0 0 3px rgba(43,224,200,.12);}
 .field-error{color:var(--rose); font-size:12px; margin-top:-10px; margin-bottom:14px;}
 .modal-error{background:rgba(255,110,122,.1); border:1px solid rgba(255,110,122,.35); color:#FF9BA3; font-size:13px; padding:12px 14px; border-radius:10px; margin-bottom:16px;}
+.account-id-box{background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:20px; display:flex; flex-direction:column; gap:4px;}
+.account-id-label{font-family:var(--mono); font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;}
+.account-id-value{font-family:var(--mono); font-size:12.5px; color:var(--teal); word-break:break-all;}
 .pay-sandbox-note{font-family:var(--mono); font-size:11px; color:var(--amber); text-align:center; margin-bottom:14px;}
 
 /* SENSOR PANELS */
@@ -305,6 +308,22 @@ nav .wrap{display:flex; align-items:center; justify-content:space-between; paddi
 .ios-steps.show{display:block;}
 .ios-steps ol{margin:8px 0 0 18px; padding:0;}
 .ios-steps li{margin-bottom:4px;}
+
+/* GLOBAL INSTALL TOPBAR — shown immediately on load, on every page */
+.install-topbar{display:none; background:linear-gradient(90deg,rgba(43,224,200,.14),rgba(156,140,255,.12)); border-bottom:1px solid rgba(43,224,200,.3);}
+.install-topbar.show{display:block;}
+.topbar-inner{max-width:1160px; margin:0 auto; padding:10px 20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+.topbar-inner .tb-icon{width:24px; height:24px; border-radius:6px; flex-shrink:0;}
+.topbar-inner .tb-text{flex:1; min-width:180px; font-size:13px; color:var(--text);}
+.topbar-inner button{flex-shrink:0;}
+.tb-install, .tb-ios{font-family:var(--body); font-weight:600; font-size:12.5px; padding:8px 16px; border-radius:7px; border:1px solid transparent; cursor:pointer; background:var(--teal); color:#06120F;}
+.tb-close{background:transparent; border:none; color:var(--muted); cursor:pointer; font-size:15px; padding:4px 8px; line-height:1;}
+.tb-close:hover{color:var(--text);}
+.topbar-ios-detail{display:none; max-width:1160px; margin:0 auto; padding:0 20px 12px; font-size:12.5px; color:var(--muted);}
+.topbar-ios-detail.show{display:block;}
+.topbar-ios-detail ol{margin:6px 0 0 18px; padding:0;}
+.topbar-ios-detail li{margin-bottom:3px;}
+@media(max-width:640px){.topbar-inner .tb-text{font-size:12.5px;}}
 .form-note{font-size:12px; color:var(--muted); margin-top:14px; text-align:left; line-height:1.5;}
 .form-success{display:none; text-align:center; padding:20px 0;}
 .form-success.show{display:block;}
@@ -346,6 +365,23 @@ footer{border-top:1px solid var(--line); padding:50px 0 34px;}
 </style>
 </head>
 <body>
+
+<div class="install-topbar" id="installTopbar">
+  <div class="topbar-inner">
+    <img class="tb-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAADNElEQVR4nMWXz08TURDH9w7pbku3LS20pe1ul5Y2KTEBxGAE0UTCQYEYjBcjnJTKQSRoMEIJqAcxVkQjEgEveABBDhISgiJVExHCwQSDP/4FfnhlzMzSFaFGSXfLJpNu2+x8P2/mvX3vyzDbrjSzy8TyYofOIi3oA4U/jSXHgD+cXGAOzKWzSJ9YXoygBpPoYnlvDSeE1u0d18EbewnCi0Fw9UfB1XcvueiPUi7MaY+0AmqwvLd6l3hGYemmODMKtnADcNl5wJpEVQNz2i6FQZwZAWPBkU0FIs3sMiEVipvKKlQX3hl86QmC4DyhtXSLh2ew51h2HLnW4vHASmA7WF5oZ3QWaRH7o0XZ/9oOewC8c+OAE5PRB4o2hNGBlInHwzM2BPpg4TpjLD4K7sEHKQdATdRmjIfKwT3Qk1xJrRIIE8/A0XXj/wEGegC1VQHAkfh/vAff8hvgHAHtADirRL1zdP45Umt9PQFgmGtqtQMwlVfII/38GjirT/nd2d2lAOREb2sHkH2tWRHij1cqv4uTwzLY1xhIi1PAZUraAHjGhhQAhKG2ZPnBtzIH0sdX4B7uo/+wUqoDcM4gCfm+zJIIbjDUljK5Le7BXrA1XKB7e3ur+gDmqtNyjx92gzQ/Cb6VGEFlhS/KFWm+DIbAQfB/fwe4r6gO4LgVIaHMc+ch59EdecafrAFn79Z9ZZU8H6ae0/eMAyX0ys2+eoUC7/cE4HoShdylaSWw/JjYkFcA1ro6usfliKPFUeuFfHmitrYoK8W3LLeLKtTSlBxA7tI0uJ7ep/8MwSJK6n07Dv5vMfqMP4cjlz5MyNDJALD/CO/s2O+1//hu4omLLWhpoti52yYN4OzuVABsjeE9P580gOXM2YQvpZQB6IV86j++/ThnIPUALC7Nm2172oITAxTv84FEHyxa39cjmc4iLeABcd8OpSwvRvCIjEflVAHgsqUNixfathmTETINWovj7knGRAitpmeKxrg1q0a7RNasMayNNbMHKDeKow1keeHUTn9YzQmhNWwHGhWcJGqZU8xF5rSdzOnqLvH4hV4N7ZLOkjtvyCvYUMueYy7MiT1Xyr51/QKVWBXhcor1zwAAAABJRU5ErkJggg==" alt="">
+    <span class="tb-text">Installe NEUROLIFE sur ton téléphone — accès en un tap, comme une vraie app.</span>
+    <button class="tb-install" id="topbarInstallBtn" onclick="triggerInstall()" style="display:none;">Installer</button>
+    <button class="tb-ios" id="topbarIosBtn" onclick="toggleTopbarIosSteps()" style="display:none;">Comment faire</button>
+    <button class="tb-close" onclick="dismissInstallTopbar()" aria-label="Fermer">✕</button>
+  </div>
+  <div class="topbar-ios-detail" id="topbarIosDetail">
+    <strong style="color:var(--text);">Sur iPhone / iPad (dans Safari) :</strong>
+    <ol>
+      <li>Appuie sur l'icône de partage en bas de l'écran</li>
+      <li>Choisis « Sur l'écran d'accueil »</li>
+    </ol>
+  </div>
+</div>
 
 <nav>
   <div class="wrap">
@@ -859,7 +895,11 @@ Cotonou, Bénin</div>
     <div class="form-success" id="accountSuccess">
       <svg class="check" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="none" stroke="#2BE0C8" stroke-width="2"/><path d="M15 24 L21 30 L33 17" fill="none" stroke="#2BE0C8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <h2 style="margin-bottom:8px;">Compte créé</h2>
-      <p style="color:var(--muted); font-size:13.5px; margin-bottom:20px;" id="accountSuccessMsg"></p>
+      <p style="color:var(--muted); font-size:13.5px; margin-bottom:8px;" id="accountSuccessMsg"></p>
+      <div class="account-id-box">
+        <span class="account-id-label">Ton identifiant NEUROLIFE</span>
+        <code id="accountIdDisplay" class="account-id-value"></code>
+      </div>
       <button class="btn btn-primary btn-block" id="payNowBtn" style="display:none; margin-bottom:10px;" onclick="startKkiapayPayment()">Payer par carte ou Mobile Money</button>
       <div class="pay-sandbox-note" id="paySandboxNote" style="display:none;">Mode test (sandbox) — configure ta vraie clé KKiaPay pour activer les paiements réels. Voir le commentaire dans le code.</div>
       <button class="btn btn-ghost btn-block" onclick="closeAccountModal()">Continuer</button>
@@ -1525,6 +1565,30 @@ document.addEventListener('keydown', (e)=>{
   if(mobileMenu && mobileMenu.classList.contains('open')) mobileMenu.classList.remove('open');
 });
 
+/* ---------- Unique per-user account ID ----------
+   Cryptographically random when the browser exposes crypto.randomUUID()
+   (any real https deployment, and most modern browsers generally). Falls
+   back to crypto.getRandomValues() and finally to Math.random() only if
+   neither is available (e.g. a plain file:// preview, which browsers
+   don't treat as a secure context) — good enough for a demo ID, but real
+   accounts will get their real Supabase user.id instead once configured. */
+function generateAccountId(){
+  try{
+    if(window.crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  }catch(err){ /* fall through */ }
+  try{
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = [...bytes].map(b => b.toString(16).padStart(2,'0'));
+    return `${hex.slice(0,4).join('')}-${hex.slice(4,6).join('')}-${hex.slice(6,8).join('')}-${hex.slice(8,10).join('')}-${hex.slice(10,16).join('')}`;
+  }catch(err){
+    console.warn('Secure UUID generation unavailable, using a weaker fallback:', err.message);
+    return 'demo-' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+  }
+}
+
 async function submitAccount(e){
   e.preventDefault();
   try{
@@ -1575,9 +1639,9 @@ async function submitAccount(e){
         if(banner){ banner.textContent = error.message || "Erreur lors de la création du compte."; banner.style.display = 'block'; }
         return;
       }
-      demoAccount = { name, email, plan, real: true };
+      demoAccount = { name, email, plan, real: true, id: data.user ? data.user.id : generateAccountId() };
     } else {
-      demoAccount = { name, email, plan };
+      demoAccount = { name, email, plan, id: generateAccountId() };
     }
 
     renderNavAccount();
@@ -1587,6 +1651,8 @@ async function submitAccount(e){
     document.getElementById('accountSuccessMsg').textContent = SUPABASE_CONFIGURED
       ? `Bienvenue ${name} — compte réel créé, plan ${plan}. Vérifie ta boîte mail pour confirmer ton adresse si Supabase te le demande.`
       : `Bienvenue ${name} — plan ${plan} activé (démonstration).`;
+    const idEl = document.getElementById('accountIdDisplay');
+    if(idEl) idEl.textContent = demoAccount.id;
 
     const payBtn = document.getElementById('payNowBtn');
     const payNote = document.getElementById('paySandboxNote');
