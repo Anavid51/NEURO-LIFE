@@ -58,8 +58,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <style>
 :root{
-  --ink:#080B14; --surface:#0F1626; --surface-2:#161F35; --line:#232E48;
+  --ink:#080B14; --surface:#0F1626; --surface-2:#161F35; --surface-3:#1D2842; --line:#232E48; --line-soft:#1A2338;
   --text:#E7ECF6; --muted:#8A93AC; --teal:#2BE0C8; --violet:#9C8CFF; --amber:#F5B23F; --rose:#FF6E7A;
+  --gold:#E8C275; --gold-soft:#F4DDA0;
   --display:'Space Grotesk','Segoe UI',sans-serif; --body:'IBM Plex Sans','Segoe UI',sans-serif; --mono:'IBM Plex Mono','Courier New',monospace;
 }
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
@@ -74,6 +75,8 @@ body::after{content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
 nav, main, footer{position:relative; z-index:1;}
 a{color:inherit;}
+:focus-visible{outline:2px solid var(--teal); outline-offset:2px; border-radius:4px;}
+.form-field input:focus-visible, .form-field textarea:focus-visible, .form-field select:focus-visible{outline:none;}
 .wrap{max-width:1160px; margin:0 auto; padding:0 28px;}
 section{padding:96px 0;}
 @media(max-width:640px){
@@ -199,8 +202,21 @@ nav .wrap{display:flex; align-items:center; justify-content:space-between; paddi
 /* PRICING */
 .plan{background:linear-gradient(160deg,var(--surface),rgba(15,22,38,.5)); border:1px solid var(--line); border-radius:16px; padding:28px; display:flex; flex-direction:column; position:relative; transition:.3s cubic-bezier(.2,.8,.2,1);}
 .plan:hover{transform:translateY(-3px); box-shadow:0 20px 40px -20px rgba(43,224,200,.2);}
-.plan.highlight{border-color:rgba(43,224,200,.5); box-shadow:0 0 0 1px rgba(43,224,200,.5), 0 20px 50px -20px rgba(43,224,200,.35);}
-.plan .badge-pop{position:absolute; top:-12px; left:28px; background:var(--teal); color:#06110F; font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; padding:4px 10px; border-radius:100px;}
+.plan.highlight{border-color:rgba(232,194,117,.5); box-shadow:0 0 0 1px rgba(232,194,117,.4), 0 20px 50px -20px rgba(232,194,117,.3);}
+.plan .badge-pop{position:absolute; top:-12px; left:28px; background:linear-gradient(100deg,var(--gold-soft),var(--gold)); color:#2A1F0A; font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; padding:4px 10px; border-radius:100px; font-weight:600;}
+.plan.highlight .price{background:linear-gradient(100deg,var(--gold-soft),var(--gold)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.plan.highlight .btn-primary{background:linear-gradient(135deg,var(--gold-soft),var(--gold)); box-shadow:0 0 0 1px rgba(232,194,117,.3), 0 8px 24px -8px rgba(232,194,117,.5);}
+
+.trial-banner{
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:24px;
+  background:linear-gradient(120deg,rgba(232,194,117,.10),rgba(15,22,38,.4)); border:1px solid rgba(232,194,117,.3);
+  border-radius:18px; padding:32px 34px; position:relative; overflow:hidden;
+}
+.trial-banner::before{content:''; position:absolute; top:-30%; right:-6%; width:280px; height:280px; background:radial-gradient(circle,rgba(232,194,117,.14),transparent 70%); pointer-events:none;}
+.trial-banner .eyebrow{color:var(--gold);}
+.trial-banner .eyebrow::before{background:linear-gradient(90deg,var(--gold),transparent);}
+.trial-banner-text{position:relative; z-index:1;}
+.trial-banner .btn-primary{background:linear-gradient(135deg,var(--gold-soft),var(--gold)); box-shadow:0 0 0 1px rgba(232,194,117,.3), 0 8px 24px -8px rgba(232,194,117,.5); position:relative; z-index:1; flex-shrink:0;}
 .plan h3{font-size:15px; color:var(--muted); font-weight:500; text-transform:uppercase; letter-spacing:.06em; font-family:var(--mono);}
 .plan .price{margin-top:8px; font-size:28px; font-family:var(--display); margin-bottom:18px;}
 .plan .price span{font-size:13px; color:var(--muted); font-family:var(--body);}
@@ -230,7 +246,7 @@ nav .wrap{display:flex; align-items:center; justify-content:space-between; paddi
 .sensor-panel .sh svg{width:22px; height:22px; flex-shrink:0;}
 .sensor-panel .sh h3{font-size:16.5px;}
 .sensor-panel .sdesc{color:var(--muted); font-size:13px; margin-bottom:18px;}
-.sensor-stage{background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:16px; min-height:96px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; margin-bottom:14px; position:relative; overflow:hidden;}
+.sensor-stage{background:var(--surface-3); border:1px solid var(--line-soft); border-radius:10px; padding:16px; min-height:96px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; margin-bottom:14px; position:relative; overflow:hidden; box-shadow:inset 0 2px 8px rgba(0,0,0,.25);}
 .sensor-stage canvas, .sensor-stage video{width:100%; border-radius:6px; display:block;}
 .sensor-readout{font-family:var(--mono); font-size:13px; color:var(--teal); text-align:center;}
 .sensor-readout .big{font-size:26px; display:block; color:var(--text); margin-bottom:2px;}
